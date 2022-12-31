@@ -220,8 +220,8 @@ func (app *Application) patchTeamHandler(w http.ResponseWriter, r *http.Request)
 		}
 
 		// Delete the old profile picture
-		if _, err := os.Stat(fmt.Sprintf("%s/%s", app.Config.Uploads, &team.TeamPicture)); err == nil {
-			err = os.Remove(fmt.Sprintf("%s/%s", app.Config.Uploads, &team.TeamPicture))
+		if _, err := os.Stat(fmt.Sprintf("%s/%s", app.Config.Uploads, team.TeamPicture)); err == nil {
+			err = os.Remove(fmt.Sprintf("%s/%s", app.Config.Uploads, team.TeamPicture))
 			if err != nil {
 				app.serverErrorResponse(w, r, err)
 				return
