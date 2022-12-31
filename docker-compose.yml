@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres
+    hostname: db-service
+    networks:
+      - network-services
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432"
+    volumes:
+      - database-data:/var/lib/postgresql/data/
+  migrate:
+    depends_on:
+      - db
+    image: migrate/migrate
+    networks:
+      - network-services
+    volumes:
+      - ./migrations:/migrations
+    command: -database postgres://postgres:postgres@db-service:5432/postgres?sslmode=disable -path /migrations up
+    restart: on-failure
+  user:
+    depends_on:
+      - db
+    build:
+      context: user
+    hostname: go-user-service
+    networks:
+      - network-services
+    ports:
+      - "4000"
+    security_opt:
+      - "seccomp:unconfined"
+    environment:
+      - DBDSN=${DBDSN:-postgres://postgres:postgres@db-service:5432/postgres?sslmode=disable}
+    deploy:
+      restart_policy:
+        condition: on-failure
+  team:
+    depends_on:
+      - db
+    build:
+      context: .
+    hostname: go-team-service
+    networks:
+      - network-services
+    ports:
+      - "4001"
+    security_opt:
+      - "seccomp:unconfined"
+    volumes:
+      - ./uploads:/app/uploads
+    environment:
+      - DBDSN=${DBDSN:-postgres://postgres:postgres@db-service:5432/postgres?sslmode=disable}
+      - UPLOADS=${UPLOADS:-/app/uploads}
+    deploy:
+      restart_policy:
+        condition: on-failure
+  front-envoy:
+    build:
+      context: .
+      dockerfile: Dockerfile-frontenvoy
+    networks:
+      - network-services
+    ports:
+      - "${PORT_PROXY:-8000}:8000"
+      - "${PORT_STATS:-8001}:8001"
+
+volumes:
+  database-data:
+
+networks:
+  network-services:
+    driver: bridge
