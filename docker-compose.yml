@@ -50,7 +50,7 @@ services:
     networks:
       - network-services
     ports:
-      - "4001"
+      - "4002"
     security_opt:
       - "seccomp:unconfined"
     volumes:

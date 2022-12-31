@@ -19,7 +19,7 @@ COPY . .
 RUN go build -o team ./cmd
 
 # Expose port
-EXPOSE 4001
+EXPOSE 4002
 
 # Run Application
 CMD ["./team"]
