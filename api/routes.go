@@ -20,6 +20,8 @@ func (app *Application) routes() http.Handler {
 	router.HandlerFunc(http.MethodGet, "/service/teams/me", app.requireAuthenticated(app.getTeamHandler))
 	router.HandlerFunc(http.MethodPatch, "/service/teams/:id", app.requireAuthenticated(app.patchTeamHandler))
 	router.HandlerFunc(http.MethodGet, "/service/teams/pictures/:file", app.getProfilePictureHandler)
+	router.HandlerFunc(http.MethodPost, "/service/teams/members", app.requireAuthenticated(app.createTeamMemberHandler))
+	router.HandlerFunc(http.MethodDelete, "/service/teams/members/:id", app.requireAuthenticated(app.deleteTeamMemberHandler))
 
 	router.Handler(http.MethodGet, "/service/profiles/debug/vars", expvar.Handler())
 
