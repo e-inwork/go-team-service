@@ -21,9 +21,10 @@ func (app *Application) routes() http.Handler {
 	router.HandlerFunc(http.MethodPatch, "/service/teams/:id", app.requireAuthenticated(app.patchTeamHandler))
 	router.HandlerFunc(http.MethodGet, "/service/teams/pictures/:file", app.getProfilePictureHandler)
 	router.HandlerFunc(http.MethodPost, "/service/teams/members", app.requireAuthenticated(app.createTeamMemberHandler))
+	router.HandlerFunc(http.MethodGet, "/service/teams/members", app.requireAuthenticated(app.listTeamMembersByOwnerHandler))
 	router.HandlerFunc(http.MethodDelete, "/service/teams/members/:id", app.requireAuthenticated(app.deleteTeamMemberHandler))
 
-	router.Handler(http.MethodGet, "/service/profiles/debug/vars", expvar.Handler())
+	router.Handler(http.MethodGet, "/service/teams/debug/vars", expvar.Handler())
 
 	return app.metrics(app.recoverPanic(app.enableCORS(app.rateLimit(app.authenticate(router)))))
 }

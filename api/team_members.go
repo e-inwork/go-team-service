@@ -138,3 +138,36 @@ func (app *Application) deleteTeamMemberHandler(w http.ResponseWriter, r *http.R
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *Application) listTeamMembersByOwnerHandler(w http.ResponseWriter, r *http.Request) {
+	// Get the current user
+	user := app.contextGetUser(r)
+
+	// Get a Team from the database
+	team, err := app.Models.Teams.GetByTeamUser(user.ID)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	// Get list
+	teamMembers, err := app.Models.TeamMembers.ListByOwner(team.ID)
+	if err != nil {
+		switch {
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	// Response
+	err = app.writeJSON(w, http.StatusOK, envelope{"team_members": teamMembers}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}

@@ -54,12 +54,16 @@
   ```
   curl -d '{"team_member_team": "'$team_member_team'", "team_member_user": "'$team_member_user'"}' -H "Authorization: Bearer $token" -H "Content-Type: application/json" -X POST http://localhost:8000/service/teams/members
   ```
-15. Set a `team_member_id` variable from the current team member, for example:
+14. Set a `team_member_id` variable from the current team member, for example:
   ```
   team_member_id=35fc84e9-96dd-422b-adf5-e19bba1ec8a4
   ```
-14. Delete the current team member, and the response will be `HTTP/1.1 200 OK`:
+15. Get a list team member of teh current user:
+  ```
+  curl -H "Authorization: Bearer $token" http://localhost:8000/service/teams/members
+  ```
+16. Delete the current team member, and the response will be `HTTP/1.1 200 OK`:
   ```
   curl -I -H "Authorization: Bearer $token"  -X DELETE http://localhost:8000/service/teams/members/$team_member_id
   ```
-15. Have fun!
+17. Have fun!
