@@ -113,11 +113,11 @@ func (app *Application) createTeamHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
-func (app *Application) getTeamHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) getOwnTeamHandler(w http.ResponseWriter, r *http.Request) {
 	// Get the current user as the owner of the record
 	user := app.contextGetUser(r)
 
-	// Get profile by user
+	// Get team by user
 	team, err := app.Models.Teams.GetByTeamUser(user.ID)
 
 	// Check error

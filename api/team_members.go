@@ -74,6 +74,18 @@ func (app *Application) createTeamMemberHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	// Get the Team Member just created
+	teamMember, err = app.Models.TeamMembers.GetByID(teamMember.ID)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
 	err = app.writeJSON(w, http.StatusCreated, envelope{"team_member": teamMember}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
@@ -116,7 +128,6 @@ func (app *Application) deleteTeamMemberHandler(w http.ResponseWriter, r *http.R
 	user := app.contextGetUser(r)
 
 	// Check if the record has a related to the current user
-	// Only the owner of the record can update the own record
 	if team.TeamUser != user.ID {
 		app.notPermittedResponse(w, r)
 		return
@@ -167,6 +178,54 @@ func (app *Application) listTeamMembersByOwnerHandler(w http.ResponseWriter, r *
 
 	// Response
 	err = app.writeJSON(w, http.StatusOK, envelope{"team_members": teamMembers}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *Application) getTeamMemberHandler(w http.ResponseWriter, r *http.Request) {
+	// Get ID from the request parameters
+	id, err := app.readIDParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	// Get Team Member from the database
+	teamMember, err := app.Models.TeamMembers.GetByID(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	// Get a Team
+	team, err := app.Models.Teams.GetByID(teamMember.TeamMemberTeam)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	// Get the current user
+	user := app.contextGetUser(r)
+
+	// Check if the record has a related to the current user
+	if teamMember.TeamMemberUser != user.ID && team.TeamUser != user.ID {
+		app.notPermittedResponse(w, r)
+		return
+	}
+
+	// Send a request response
+	err = app.writeJSON(w, http.StatusOK, envelope{"team_member": teamMember}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

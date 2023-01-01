@@ -35,41 +35,45 @@
    ```
 9. The response will show a team picture, open it on the browser for example like this http://localhost:8000/service/teams/pictures/926d610c-fd54-450e-aa83-030683227072.jpg
 10. Get the team of the current user:
-  ```
-  curl -H "Authorization: Bearer $token" http://localhost:8000/service/teams/me
-  ```
+    ```
+    curl -H "Authorization: Bearer $token" http://localhost:8000/service/teams/me
+    ```
 11. Set a `team_member_team` variable from the id of the current team for example like below:
-   ```
-   team_member_team=9a584a86-1212-41f9-8d32-9911ee3f4550
-   ```
+    ```
+    team_member_team=9a584a86-1212-41f9-8d32-9911ee3f4550
+    ```
 12. Regsiter a new user for adding it as team member:
-  ```
-  curl -d '{"email": "nina@doe.com", "password": "pa55word", "first_name": "Nina", "last_name": "Doe"}' -H "Content-Type: application/json" -X POST http://localhost:8000/service/users
-  ```
+    ```
+    curl -d '{"email": "nina@doe.com", "password": "pa55word", "first_name": "Nina", "last_name": "Doe"}' -H "Content-Type: application/json" -X POST http://localhost:8000/service/users
+    ```
 11. Set a `team_member_user` variable from the id of the last user (No. 12) for example like below:
-   ```
-   team_member_user=08a6c56a-d3f9-47d3-81ea-ced54153e1df
-   ```
+    ```
+    team_member_user=08a6c56a-d3f9-47d3-81ea-ced54153e1df
+    ```
 13. Create a team member:
-  ```
-  curl -d '{"team_member_team": "'$team_member_team'", "team_member_user": "'$team_member_user'"}' -H "Authorization: Bearer $token" -H "Content-Type: application/json" -X POST http://localhost:8000/service/teams/members
-  ```
+    ```
+    curl -d '{"team_member_team": "'$team_member_team'", "team_member_user": "'$team_member_user'"}' -H "Authorization: Bearer $token" -H "Content-Type: application/json" -X POST http://localhost:8000/service/teams/members
+    ```
 14. Set a `team_member_id` variable from the current team member, for example:
-  ```
-  team_member_id=35fc84e9-96dd-422b-adf5-e19bba1ec8a4
-  ```
+    ```
+    team_member_id=35fc84e9-96dd-422b-adf5-e19bba1ec8a4
+    ```
+16. Get a team member by `team_member_id`:
+    ```
+    curl -H "Authorization: Bearer $token" http://localhost:8000/service/teams/members/$team_member_id
+    ```
 15. Get a list team member of the current user:
-  ```
-  curl -H "Authorization: Bearer $token" http://localhost:8000/service/teams/members
-  ```
-16. Delete the current team member, and the response will be `HTTP/1.1 200 OK`:
-  ```
-  curl -I -H "Authorization: Bearer $token"  -X DELETE http://localhost:8000/service/teams/members/$team_member_id
-  ```
+    ```
+    curl -H "Authorization: Bearer $token" http://localhost:8000/service/teams/members
+    ```
+16. Delete a team member by `team_member_id`, and the response will be `HTTP/1.1 200 OK`:
+    ```
+    curl -I -H "Authorization: Bearer $token"  -X DELETE http://localhost:8000/service/teams/members/$team_member_id
+    ```
 17. Run end to end unit testing (install Golang before run the below command, if not yet installed):
-  ```
-  go mod tidy
-  cd api
-  go test -v .
-  ```
+    ```
+    go mod tidy
+    cd api
+    go test -v .
+    ```
 18. Have fun!

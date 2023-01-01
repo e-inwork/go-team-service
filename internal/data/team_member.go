@@ -53,9 +53,19 @@ func (m TeamMemberModel) Insert(teamMember *TeamMember) error {
 
 func (m TeamMemberModel) GetByID(id uuid.UUID) (*TeamMember, error) {
 	query := `
-        SELECT id, created_at, team_member_team, team_member_user
-        FROM team_members
-        WHERE id = $1`
+    SELECT
+			team_members.id,
+			team_members.created_at,
+			team_member_team,
+			teams.team_name as team_member_team_name,
+			team_member_user,
+			users.first_name as team_member_user_first_name,
+			users.last_name as team_member_user_last_name
+    FROM team_members, teams, users
+		WHERE team_members.id = $1
+		AND team_member_team = teams.id
+		AND team_member_user = users.id
+	`
 
 	var teamMember TeamMember
 
@@ -66,7 +76,10 @@ func (m TeamMemberModel) GetByID(id uuid.UUID) (*TeamMember, error) {
 		&teamMember.ID,
 		&teamMember.CreatedAt,
 		&teamMember.TeamMemberTeam,
+		&teamMember.TeamMemberTeamName,
 		&teamMember.TeamMemberUser,
+		&teamMember.TeamMemberUserFirstName,
+		&teamMember.TeamMemberUserLastName,
 	)
 
 	if err != nil {
