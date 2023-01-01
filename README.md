@@ -5,7 +5,7 @@
 #### The application will be running with two different microservices in one port 8000 using [Envoy](https://www.envoyproxy.io).
 1. Install Docker
     - https://docs.docker.com/get-docker/
-2. Git clone this repository to your localhost, and from the terminal run below command:
+2. Git clone this repository to your folder, and from the terminal run below command:
    ```
    git clone git@github.com:e-inwork-com/go-team-service
    ```
