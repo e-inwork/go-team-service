@@ -58,7 +58,7 @@
   ```
   team_member_id=35fc84e9-96dd-422b-adf5-e19bba1ec8a4
   ```
-15. Get a list team member of teh current user:
+15. Get a list team member of the current user:
   ```
   curl -H "Authorization: Bearer $token" http://localhost:8000/service/teams/members
   ```
