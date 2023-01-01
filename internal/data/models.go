@@ -15,13 +15,15 @@ var (
 )
 
 type Models struct {
-	Teams TeamModel
-	Users dataUser.UserModel
+	Teams       TeamModel
+	Users       dataUser.UserModel
+	TeamMembers TeamMemberModel
 }
 
 func InitModels(db *sql.DB) Models {
 	return Models{
-		Teams: TeamModel{DB: db},
-		Users: dataUser.UserModel{DB: db},
+		Teams:       TeamModel{DB: db},
+		Users:       dataUser.UserModel{DB: db},
+		TeamMembers: TeamMemberModel{DB: db},
 	}
 }
