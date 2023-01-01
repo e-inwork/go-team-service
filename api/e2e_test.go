@@ -26,6 +26,10 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+
 	_ "github.com/lib/pq"
 )
 
@@ -97,40 +101,6 @@ func TestMain(m *testing.M) {
 
 	_, _ = db.Exec("CREATE EXTENSION IF NOT EXISTS pgcrypto;")
 
-	_, _ = db.Exec(`
-		CREATE TABLE IF NOT EXISTS users (
-			id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
-			created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
-			email text UNIQUE NOT NULL,
-			password_hash bytea NOT NULL,
-			first_name char varying(100) NOT NULL,
-			last_name char varying(100) NOT NULL,
-			activated bool NOT NULL DEFAULT false,
-			version integer NOT NULL DEFAULT 1
-		);
-	`)
-
-	_, _ = db.Exec(`
-		CREATE TABLE IF NOT EXISTS teams (
-			id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
-			created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
-			team_user UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE UNIQUE,
-			team_name char varying(100) NOT NULL,
-			team_picture char varying(512),
-			version integer NOT NULL DEFAULT 1
-		);
-	`)
-
-	_, _ = db.Exec(`
-		CREATE TABLE IF NOT EXISTS team_members (
-			id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
-			created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
-			team_member_team UUID NOT NULL REFERENCES teams (id) ON DELETE CASCADE,
-			team_member_user UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-			UNIQUE(team_member_team, team_member_user)
-		);
-	`)
-
 	os.Exit(m.Run())
 }
 
@@ -140,6 +110,17 @@ func TestE2E(t *testing.T) {
 
 	db, _ := apiUser.OpenDB(cfgUser)
 	defer db.Close()
+
+	// Migrate
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	assert.Nil(t, err)
+
+	m, err := migrate.NewWithDatabaseInstance(
+		"file://../migrations",
+		"postgres", driver)
+	assert.Nil(t, err)
+
+	m.Up()
 
 	appUser := &apiUser.Application{
 		Config: cfgUser,
