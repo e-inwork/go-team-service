@@ -310,6 +310,15 @@ func TestE2E(t *testing.T) {
 	// Should be more than 0
 	assert.NotEqual(t, len(mTeamMembers["team_members"]), 0)
 
+	// Get a team member
+	req, _ = http.NewRequest("GET", tsTeam.URL+"/service/teams/members/"+mTeamMembers["team_members"][0].ID.String(), nil)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Set("Authorization", bearer)
+
+	res, err = tsTeam.Client().Do(req)
+	assert.Nil(t, err)
+	assert.Equal(t, res.StatusCode, http.StatusOK)
+
 	// Delete a team member
 	req, _ = http.NewRequest("DELETE", tsTeam.URL+"/service/teams/members/"+mTeamMember["team_member"].ID.String(), nil)
 	req.Header.Add("Content-Type", "application/json")
