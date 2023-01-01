@@ -66,4 +66,10 @@
   ```
   curl -I -H "Authorization: Bearer $token"  -X DELETE http://localhost:8000/service/teams/members/$team_member_id
   ```
-17. Have fun!
+17. Run end to end unit testing (install Golang before run the below command, if not yet installed):
+  ```
+  go mod tidy
+  cd api
+  go test -v .
+  ```
+18. Have fun!
