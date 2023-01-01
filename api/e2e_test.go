@@ -321,6 +321,14 @@ func TestE2E(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, res.StatusCode, http.StatusOK)
 
+	// Read response
+	var mTeamMembers map[string][]data.TeamMember
+	err = json.NewDecoder(res.Body).Decode(&mTeamMembers)
+	assert.Nil(t, err)
+
+	// Should be more then 0
+	assert.NotEqual(t, len(mTeamMembers), 0)
+
 	// Delete a team member
 	req, _ = http.NewRequest("DELETE", tsTeam.URL+"/service/teams/members/"+mTeamMember["team_member"].ID.String(), nil)
 	req.Header.Add("Content-Type", "application/json")
