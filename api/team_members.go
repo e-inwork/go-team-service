@@ -6,8 +6,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/e-inwork-com/go-team-service/internal/data"
-	"github.com/e-inwork-com/go-team-service/internal/validator"
+	"github.com/e-inwork-com/go-team-service/pkg/data"
+	"github.com/e-inwork-com/go-team-service/pkg/validator"
 	"github.com/google/uuid"
 )
 

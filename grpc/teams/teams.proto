@@ -1,0 +1,23 @@
+// Copyright 2022, e-inwork.com. All rights reserved.
+
+syntax = "proto3";
+
+package teams;
+
+option go_package = "/teams";
+
+message Team {
+  string id = 1;
+}
+
+message TeamRequest {
+  Team teamEntry = 1;
+}
+
+message TeamResponse {
+  string result = 1;
+}
+
+service TeamService {
+  rpc WriteTeam(TeamRequest) returns (TeamResponse);
+}

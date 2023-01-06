@@ -16,8 +16,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/e-inwork-com/go-team-service/internal/data"
-	"github.com/e-inwork-com/go-team-service/internal/jsonlog"
+	"github.com/e-inwork-com/go-team-service/pkg/data"
+	"github.com/e-inwork-com/go-team-service/pkg/jsonlog"
 	apiUser "github.com/e-inwork-com/go-user-service/api"
 	dataUser "github.com/e-inwork-com/go-user-service/pkg/data"
 	jsonLogUser "github.com/e-inwork-com/go-user-service/pkg/jsonlog"

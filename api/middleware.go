@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/e-inwork-com/go-team-service/internal/data"
+	"github.com/e-inwork-com/go-team-service/pkg/data"
 	apiUser "github.com/e-inwork-com/go-user-service/api"
 	dataUser "github.com/e-inwork-com/go-user-service/pkg/data"
 
