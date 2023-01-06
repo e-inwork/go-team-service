@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/e-inwork-com/go-team-service/api"
-	"github.com/e-inwork-com/go-team-service/internal/data"
-	"github.com/e-inwork-com/go-team-service/internal/jsonlog"
+	"github.com/e-inwork-com/go-team-service/pkg/data"
+	"github.com/e-inwork-com/go-team-service/pkg/jsonlog"
 
 	_ "github.com/lib/pq"
 )

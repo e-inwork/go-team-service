@@ -8,7 +8,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/e-inwork-com/go-team-service/internal/validator"
+	"github.com/e-inwork-com/go-team-service/pkg/validator"
 
 	"github.com/google/uuid"
 )

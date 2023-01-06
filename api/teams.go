@@ -11,8 +11,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/e-inwork-com/go-team-service/internal/data"
-	"github.com/e-inwork-com/go-team-service/internal/validator"
+	"github.com/e-inwork-com/go-team-service/pkg/data"
+	"github.com/e-inwork-com/go-team-service/pkg/validator"
 )
 
 func (app *Application) createTeamHandler(w http.ResponseWriter, r *http.Request) {

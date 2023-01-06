@@ -6,7 +6,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/e-inwork-com/go-user-service/pkg/data"
+	"github.com/e-inwork-com/go-team-service/pkg/data"
 )
 
 type contextKey string
