@@ -3,7 +3,6 @@
 package api
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -11,13 +10,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"time"
 
-	"github.com/e-inwork-com/go-team-service/grpc/teams"
 	"github.com/e-inwork-com/go-team-service/pkg/data"
 	"github.com/e-inwork-com/go-team-service/pkg/validator"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 func (app *Application) createTeamHandler(w http.ResponseWriter, r *http.Request) {
@@ -108,28 +103,6 @@ func (app *Application) createTeamHandler(w http.ResponseWriter, r *http.Request
 		default:
 			app.serverErrorResponse(w, r, err)
 		}
-		return
-	}
-
-	// Send to gRPC - Go Team Search Service
-	conn, err := grpc.Dial("go-team-search-service:50001", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-		return
-	}
-	defer conn.Close()
-
-	c := teams.NewTeamServiceClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-
-	_, err = c.WriteTeam(ctx, &teams.TeamRequest{
-		TeamEntry: &teams.Team{
-			Id: team.ID.String(),
-		},
-	})
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
 		return
 	}
 

@@ -5,8 +5,6 @@ package data
 import (
 	"database/sql"
 	"errors"
-
-	dataUser "github.com/e-inwork-com/go-user-service/pkg/data"
 )
 
 var (
@@ -16,14 +14,14 @@ var (
 
 type Models struct {
 	Teams       TeamModel
-	Users       dataUser.UserModel
+	Users       UserModel
 	TeamMembers TeamMemberModel
 }
 
 func InitModels(db *sql.DB) Models {
 	return Models{
 		Teams:       TeamModel{DB: db},
-		Users:       dataUser.UserModel{DB: db},
+		Users:       UserModel{DB: db},
 		TeamMembers: TeamMemberModel{DB: db},
 	}
 }
