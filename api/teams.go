@@ -112,7 +112,7 @@ func (app *Application) createTeamHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	// Send to gRPC - Go Team Search Service
-	connection, err := grpc.Dial(app.Config.GRPCTeams, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+	connection, err := grpc.Dial(app.Config.GRPCTeams, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		app.Logger.PrintError(err, map[string]string{
 			"target": connection.Target(),
@@ -131,8 +131,9 @@ func (app *Application) createTeamHandler(w http.ResponseWriter, r *http.Request
 			},
 		})
 		if err != nil {
-			app.serverErrorResponse(w, r, err)
-			return
+			app.Logger.PrintError(err, map[string]string{
+				"target": connection.Target(),
+			})
 		}
 	}
 
