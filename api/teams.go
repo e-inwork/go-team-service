@@ -120,21 +120,19 @@ func (app *Application) createTeamHandler(w http.ResponseWriter, r *http.Request
 	}
 	defer connection.Close()
 
-	if err == nil {
-		c := teams.NewTeamServiceClient(connection)
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		defer cancel()
+	c := teams.NewTeamServiceClient(connection)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
 
-		_, err = c.WriteTeam(ctx, &teams.TeamRequest{
-			TeamEntry: &teams.Team{
-				Id: team.ID.String(),
-			},
+	_, err = c.WriteTeam(ctx, &teams.TeamRequest{
+		TeamEntry: &teams.Team{
+			Id: team.ID.String(),
+		},
+	})
+	if err != nil {
+		app.Logger.PrintError(err, map[string]string{
+			"target": connection.Target(),
 		})
-		if err != nil {
-			app.Logger.PrintError(err, map[string]string{
-				"target": connection.Target(),
-			})
-		}
 	}
 
 	// Send a data as response of the HTTP request
