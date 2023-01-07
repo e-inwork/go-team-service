@@ -50,7 +50,8 @@ type Config struct {
 		TrustedOrigins []string
 	}
 
-	Uploads string
+	Uploads   string
+	GRPCTeams string
 }
 
 type Application struct {
