@@ -188,7 +188,7 @@ func TestE2E(t *testing.T) {
 	}
 
 	// Server Routes API
-	tsTeam := httptest.NewTLSServer(appTeam.routes())
+	tsTeam := httptest.NewTLSServer(appTeam.Routes())
 	defer tsTeam.Close()
 
 	// Create Team
