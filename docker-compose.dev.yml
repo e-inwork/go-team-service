@@ -1,136 +1,136 @@
 version: '3'
 
 services:
-  solr-local-1:
+  solr-dev-1:
     image: solr
-    container_name: solr-local-1
+    container_name: solr-dev-1
     ports:
      - "8981:8983"
     environment:
-      - ZK_HOST=zoo-local-1:2181,zoo-local-2:2181,zoo-local-3:2181
+      - ZK_HOST=zoo-dev-1:2181,zoo-dev-2:2181,zoo-dev-3:2181
     networks:
-      - network-local
+      - network-dev
     volumes:
-      - ./local/local/solr-local-1:/var/solr
+      - ./local/dev/solr-dev-1:/var/solr
     depends_on:
-      - zoo-local-1
-      - zoo-local-2
-      - zoo-local-3
+      - zoo-dev-1
+      - zoo-dev-2
+      - zoo-dev-3
 
-  solr-local-2:
+  solr-dev-2:
     image: solr
-    container_name: solr-local-2
+    container_name: solr-dev-2
     ports:
      - "8982:8983"
     environment:
-      - ZK_HOST=zoo-local-1:2181,zoo-local-2:2181,zoo-local-3:2181
+      - ZK_HOST=zoo-dev-1:2181,zoo-dev-2:2181,zoo-dev-3:2181
     networks:
-      - network-local
+      - network-dev
     volumes:
-      - ./local/local/solr-local-2:/var/solr
+      - ./local/dev/solr-dev-2:/var/solr
     depends_on:
-      - zoo-local-1
-      - zoo-local-2
-      - zoo-local-3
+      - zoo-dev-1
+      - zoo-dev-2
+      - zoo-dev-3
 
-  solr-local-3:
+  solr-dev-3:
     image: solr
-    container_name: solr-local-3
+    container_name: solr-dev-3
     ports:
      - "8983:8983"
     environment:
-      - ZK_HOST=zoo-local-1:2181,zoo-local-2:2181,zoo-local-3:2181
+      - ZK_HOST=zoo-dev-1:2181,zoo-dev-2:2181,zoo-dev-3:2181
     networks:
-      - network-local
+      - network-dev
     volumes:
-      - ./local/local/solr-local-3:/var/solr
+      - ./local/dev/solr-dev-3:/var/solr
     depends_on:
-      - zoo-local-1
-      - zoo-local-2
-      - zoo-local-3
+      - zoo-dev-1
+      - zoo-dev-2
+      - zoo-dev-3
 
-  zoo-local-1:
+  zoo-dev-1:
     image: zookeeper
-    container_name: zoo-local-1
+    container_name: zoo-dev-1
     restart: always
-    hostname: zoo-local-1
+    hostname: zoo-dev-1
     ports:
       - 2181:2181
       - 7001:7000
     environment:
       ZOO_MY_ID: 1
-      ZOO_SERVERS: server.1=zoo-local-1:2888:3888;2181 server.2=zoo-local-2:2888:3888;2181 server.3=zoo-local-3:2888:3888;2181
+      ZOO_SERVERS: server.1=zoo-dev-1:2888:3888;2181 server.2=zoo-dev-2:2888:3888;2181 server.3=zoo-dev-3:2888:3888;2181
       ZOO_4LW_COMMANDS_WHITELIST: mntr, conf, ruok
       ZOO_CFG_EXTRA: "metricsProvider.className=org.apache.zookeeper.metrics.prometheus.PrometheusMetricsProvider metricsProvider.httpPort=7000 metricsProvider.exportJvmInfo=true"
     networks:
-      - network-local
+      - network-dev
     volumes:
-      - ./local/local/zoo-local-1:/data
+      - ./local/dev/zoo-dev-1:/data
 
-  zoo-local-2:
+  zoo-dev-2:
     image: zookeeper
-    container_name: zoo-local-2
+    container_name: zoo-dev-2
     restart: always
-    hostname: zoo-local-2
+    hostname: zoo-dev-2
     ports:
       - 2182:2181
       - 7002:7000
     environment:
       ZOO_MY_ID: 2
-      ZOO_SERVERS: server.1=zoo-local-1:2888:3888;2181 server.2=zoo-local-2:2888:3888;2181 server.3=zoo-local-3:2888:3888;2181
+      ZOO_SERVERS: server.1=zoo-dev-1:2888:3888;2181 server.2=zoo-dev-2:2888:3888;2181 server.3=zoo-dev-3:2888:3888;2181
       ZOO_4LW_COMMANDS_WHITELIST: mntr, conf, ruok
       ZOO_CFG_EXTRA: "metricsProvider.className=org.apache.zookeeper.metrics.prometheus.PrometheusMetricsProvider metricsProvider.httpPort=7000 metricsProvider.exportJvmInfo=true"
     networks:
-      - network-local
+      - network-dev
     volumes:
-      - ./local/local/zoo-local-2:/data
+      - ./local/dev/zoo-dev-2:/data
 
-  zoo-local-3:
+  zoo-dev-3:
     image: zookeeper
-    container_name: zoo-local-3
+    container_name: zoo-dev-3
     restart: always
-    hostname: zoo-local-3
+    hostname: zoo-dev-3
     ports:
       - 2183:2181
       - 7003:7000
     environment:
       ZOO_MY_ID: 3
-      ZOO_SERVERS: sserver.1=zoo-local-1:2888:3888;2181 server.2=zoo-local-2:2888:3888;2181 server.3=zoo-local-3:2888:3888;2181
+      ZOO_SERVERS: sserver.1=zoo-dev-1:2888:3888;2181 server.2=zoo-dev-2:2888:3888;2181 server.3=zoo-dev-3:2888:3888;2181
       ZOO_4LW_COMMANDS_WHITELIST: mntr, conf, ruok
       ZOO_CFG_EXTRA: "metricsProvider.className=org.apache.zookeeper.metrics.prometheus.PrometheusMetricsProvider metricsProvider.httpPort=7000 metricsProvider.exportJvmInfo=true"
     networks:
-      - network-local
+      - network-dev
     volumes:
-      - ./local/local/zoo-local-3:/data
+      - ./local/dev/zoo-dev-3:/data
 
-  curl-local:
+  curl-dev:
     build:
       context: .
       dockerfile: Dockerfile.curl
     tty: true
-    container_name: curl-local
+    container_name: curl-dev
     restart: on-failure
-    hostname: curl-local
+    hostname: curl-dev
     depends_on:
-      - solr-local-1
-      - solr-local-3
-      - solr-local-2
-      - zoo-local-1
-      - zoo-local-2
-      - zoo-local-3
+      - solr-dev-1
+      - solr-dev-3
+      - solr-dev-2
+      - zoo-dev-1
+      - zoo-dev-2
+      - zoo-dev-3
     networks:
-      - network-local
+      - network-dev
     volumes:
       - ./solr-entrypoint.sh:/bin/solr-entrypoint.sh
     entrypoint:
       - /bin/sh
       - /bin/solr-entrypoint.sh
 
-  db-local:
+  db-dev:
     image: postgres
     hostname: db-service
     networks:
-      - network-local
+      - network-dev
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
@@ -138,28 +138,28 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./local/local/progresql-data:/var/lib/postgresql/data/
+      - ./local/dev/progresql-data:/var/lib/postgresql/data/
 
-  migrate-local:
+  migrate-dev:
     depends_on:
-      - db-local
+      - db-dev
     image: migrate/migrate
     networks:
-      - network-local
+      - network-dev
     volumes:
       - ./migrations:/migrations
     command: -database postgres://postgres:postgres@db-service:5432/postgres?sslmode=disable -path /migrations up
     restart: on-failure
 
-  user-local:
+  user-dev:
     depends_on:
-      - migrate-local
+      - migrate-dev
     build:
       context: .
       dockerfile: Dockerfile.user
     hostname: go-user-service
     networks:
-      - network-local
+      - network-dev
     ports:
       - "4000"
     security_opt:
@@ -170,24 +170,24 @@ services:
       restart_policy:
         condition: on-failure
 
-  team-indexing-local:
+  team-indexing-dev:
     depends_on:
-      - migrate-local
-      - solr-local-1
-      - solr-local-3
-      - solr-local-2
-      - zoo-local-1
-      - zoo-local-2
-      - zoo-local-3
-      - curl-local
+      - migrate-dev
+      - solr-dev-1
+      - solr-dev-3
+      - solr-dev-2
+      - zoo-dev-1
+      - zoo-dev-2
+      - zoo-dev-3
+      - curl-dev
     build:
       context: .
       dockerfile: Dockerfile.team.indexing
     hostname: go-team-indexing-service
     networks:
-      - network-local
+      - network-dev
     ports:
-      - "5001"
+      - "5001:5001"
     security_opt:
       - "seccomp:unconfined"
     environment:
@@ -199,42 +199,18 @@ services:
       restart_policy:
         condition: on-failure
 
-  team-local:
+  front-envoy-dev:
     depends_on:
-      - migrate-local
-      - team-indexing-local
+      - user-dev
     build:
       context: .
-    hostname: go-team-service
+      dockerfile: Dockerfile.dev.frontenvoy
     networks:
-      - network-local
-    ports:
-      - "4002"
-    security_opt:
-      - "seccomp:unconfined"
-    volumes:
-      - ./local/local/uploads:/app/uploads
-    environment:
-      - DBDSN=${DBDSN:-postgres://postgres:postgres@db-service:5432/postgres?sslmode=disable}
-      - UPLOADS=${UPLOADS:-/app/uploads}
-      - GRPCTEAMS=${GRPCTEAMS:-go-team-indexing-service:5001}
-    deploy:
-      restart_policy:
-        condition: on-failure
-
-  front-envoy-local:
-    depends_on:
-      - user-local
-      - team-local
-    build:
-      context: .
-      dockerfile: Dockerfile.frontenvoy
-    networks:
-      - network-local
+      - network-dev
     ports:
       - "${PORT_PROXY:-8000}:8000"
       - "${PORT_STATS:-8001}:8001"
 
 networks:
-  network-local:
+  network-dev:
     driver: bridge

@@ -1,4 +1,4 @@
-// Copyright 2022, e-inwork.com. All rights reserved.
+// Copyright 2023, e-inwork.com. All rights reserved.
 
 package api
 
@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/e-inwork-com/go-team-service/pkg/data"
+	"github.com/e-inwork-com/go-team-service/internal/data"
 	"github.com/google/uuid"
 
 	"github.com/felixge/httpsnoop"

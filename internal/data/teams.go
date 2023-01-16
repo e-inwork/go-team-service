@@ -1,4 +1,4 @@
-// Copyright 2022, e-inwork.com. All rights reserved.
+// Copyright 2023, e-inwork.com. All rights reserved.
 
 package data
 
@@ -8,7 +8,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/e-inwork-com/go-team-service/pkg/validator"
+	"github.com/e-inwork-com/go-team-service/internal/validator"
 
 	"github.com/google/uuid"
 )
@@ -22,12 +22,12 @@ type Team struct {
 	Version     int       `json:"-"`
 }
 
-func ValidateTeam(v *validator.Validator, team *Team) {
-	v.Check(team.TeamName != "", "team_name", "must be provided")
-}
-
 type TeamModel struct {
 	DB *sql.DB
+}
+
+func ValidateTeam(v *validator.Validator, team *Team) {
+	v.Check(team.TeamName != "", "team_name", "must be provided")
 }
 
 func (m TeamModel) Insert(team *Team) error {

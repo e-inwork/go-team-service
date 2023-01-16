@@ -1,4 +1,4 @@
-// Copyright 2022, e-inwork.com. All rights reserved.
+// Copyright 2023, e-inwork.com. All rights reserved.
 
 package main
 
@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/e-inwork-com/go-team-service/api"
-	"github.com/e-inwork-com/go-team-service/pkg/data"
-	"github.com/e-inwork-com/go-team-service/pkg/jsonlog"
+	"github.com/e-inwork-com/go-team-service/internal/data"
+	"github.com/e-inwork-com/go-team-service/internal/jsonlog"
 
 	_ "github.com/lib/pq"
 )
@@ -34,7 +34,7 @@ func main() {
 	flag.Float64Var(&cfg.Limiter.Rps, "limiter-rps", 2, "Rate limiter maximum requests per second")
 	flag.IntVar(&cfg.Limiter.Burst, "limiter-burst", 4, "Rate limiter maximum burst")
 	flag.StringVar(&cfg.Uploads, "uploads", os.Getenv("UPLOADS"), "Uploads folder")
-	flag.StringVar(&cfg.GRPCTeams, "grpc-teams", os.Getenv("GRPCTEAMS"), "gRPC Teams")
+	flag.StringVar(&cfg.GRPCTeam, "grpc-team", os.Getenv("GRPCTEAM"), "gRPC Teams")
 	flag.Func("cors-trusted-origins", "Trusted CORS origins (space separated)", func(val string) error {
 		cfg.Cors.TrustedOrigins = strings.Fields(val)
 		return nil

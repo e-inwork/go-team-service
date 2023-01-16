@@ -1,4 +1,4 @@
-// Copyright 2022, e-inwork.com. All rights reserved.
+// Copyright 2023, e-inwork.com. All rights reserved.
 
 package api
 
@@ -14,7 +14,7 @@ import (
 
 	"github.com/go-playground/form"
 
-	"github.com/e-inwork-com/go-team-service/pkg/validator"
+	"github.com/e-inwork-com/go-team-service/internal/validator"
 
 	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"

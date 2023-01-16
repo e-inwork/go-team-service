@@ -1,4 +1,4 @@
-// Copyright 2022, e-inwork.com. All rights reserved.
+// Copyright 2023, e-inwork.com. All rights reserved.
 
 package api
 
@@ -7,15 +7,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/e-inwork-com/go-team-service/pkg/data"
-	"github.com/e-inwork-com/go-team-service/pkg/grpc/teams"
-	"github.com/e-inwork-com/go-team-service/pkg/validator"
+	"github.com/e-inwork-com/go-team-service/internal/data"
+	"github.com/e-inwork-com/go-team-service/internal/grpc/teams"
+	"github.com/e-inwork-com/go-team-service/internal/validator"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -112,7 +111,7 @@ func (app *Application) createTeamHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	// Send to gRPC - Go Team Search Service
-	connection, err := grpc.Dial(app.Config.GRPCTeams, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	connection, err := grpc.Dial(app.Config.GRPCTeam, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		app.Logger.PrintError(err, map[string]string{
 			"target": connection.Target(),
@@ -311,7 +310,7 @@ func (app *Application) getProfilePictureHandler(w http.ResponseWriter, r *http.
 	}
 
 	// Read file
-	buffer, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", app.Config.Uploads, file))
+	buffer, err := os.ReadFile(fmt.Sprintf("%s/%s", app.Config.Uploads, file))
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return

@@ -1,161 +1,119 @@
-// Copyright 2022, e-inwork.com. All rights reserved.
+// Copyright 2023, e-inwork.com. All rights reserved.
 
 package api
 
 import (
 	"bytes"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
-	"time"
 
-	"github.com/e-inwork-com/go-team-service/pkg/data"
-	"github.com/e-inwork-com/go-team-service/pkg/jsonlog"
-	apiUser "github.com/e-inwork-com/go-user-service/api"
-	dataUser "github.com/e-inwork-com/go-user-service/pkg/data"
-	jsonLogUser "github.com/e-inwork-com/go-user-service/pkg/jsonlog"
-	"github.com/ory/dockertest/v3"
-	"github.com/ory/dockertest/v3/docker"
-	log "github.com/sirupsen/logrus"
+	"github.com/e-inwork-com/go-team-service/internal/data"
+	"github.com/e-inwork-com/go-team-service/internal/jsonlog"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
-
-	_ "github.com/lib/pq"
 )
 
-var cfgUser apiUser.Config
-
-func TestMain(m *testing.M) {
-	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
-	pool, err := dockertest.NewPool("")
-	if err != nil {
-		log.Fatalf("Could not construct pool: %s", err)
-	}
-
-	err = pool.Client.Ping()
-	if err != nil {
-		log.Fatalf("Could not connect to Docker: %s", err)
-	}
-
-	// pulls an image, creates a container based on it and runs it
-	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
-		Repository: "postgres",
-		Tag:        "11",
-		Env: []string{
-			"POSTGRES_PASSWORD=postgres",
-			"POSTGRES_USER=postgres",
-			"POSTGRES_DB=postgres",
-			"listen_addresses = '*'",
-		},
-	}, func(config *docker.HostConfig) {
-		// set AutoRemove to true so that stopped container goes away by itself
-		config.AutoRemove = true
-		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
-	})
-	if err != nil {
-		log.Fatalf("Could not start resource: %s", err)
-	}
-
-	hostAndPort := resource.GetHostPort("5432/tcp")
-	databaseUrl := fmt.Sprintf("postgres://postgres:postgres@%s/postgres?sslmode=disable", hostAndPort)
-
-	log.Println("Connecting to database on url: ", databaseUrl)
-
-	// Tell docker to hard kill the container in 120 seconds
-	resource.Expire(120)
-
-	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
-	pool.MaxWait = 120 * time.Second
-	if err = pool.Retry(func() error {
-		db, err := sql.Open("postgres", databaseUrl)
-		if err != nil {
-			return err
-		}
-		return db.Ping()
-	}); err != nil {
-		log.Fatalf("Could not connect to docker: %s", err)
-	}
-
-	// Server Setup
-	cfgUser.Db.Dsn = databaseUrl
-	cfgUser.Auth.Secret = "secret"
-	cfgUser.Db.MaxOpenConn = 25
-	cfgUser.Db.MaxIdleConn = 25
-	cfgUser.Db.MaxIdleTime = "15m"
-	cfgUser.Limiter.Enabled = true
-	cfgUser.Limiter.Rps = 2
-	cfgUser.Limiter.Burst = 4
-
-	db, _ := apiUser.OpenDB(cfgUser)
-	defer db.Close()
-
-	_, _ = db.Exec("CREATE EXTENSION IF NOT EXISTS pgcrypto;")
-
-	os.Exit(m.Run())
-}
-
 func TestE2E(t *testing.T) {
-	// User Service
-	loggerUser := jsonLogUser.New(os.Stdout, jsonLogUser.LevelInfo)
+	// Team Service
+	var cfg Config
+	cfg.Db.Dsn = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+	cfg.Auth.Secret = "secret"
+	cfg.Db.MaxOpenConn = 25
+	cfg.Db.MaxIdleConn = 25
+	cfg.Db.MaxIdleTime = "15m"
+	cfg.Limiter.Enabled = true
+	cfg.Limiter.Rps = 2
+	cfg.Limiter.Burst = 6
+	cfg.GRPCTeam = "localhost:5001"
+	cfg.Uploads = "../local/test/uploads"
 
-	db, _ := apiUser.OpenDB(cfgUser)
+	// Set logger
+	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
+
+	// Set Database
+	db, err := OpenDB(cfg)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
 	defer db.Close()
 
-	// Migrate
-	driver, err := postgres.WithInstance(db, &postgres.Config{})
-	assert.Nil(t, err)
-
-	m, err := migrate.NewWithDatabaseInstance(
-		"file://../migrations",
-		"postgres", driver)
-	assert.Nil(t, err)
-
-	m.Up()
-
-	appUser := &apiUser.Application{
-		Config: cfgUser,
-		Logger: loggerUser,
-		Models: dataUser.InitModels(db),
+	// Set Applcation
+	app := Application{
+		Config: cfg,
+		Logger: logger,
+		Models: data.InitModels(db),
 	}
 
-	tsUser := httptest.NewTLSServer(appUser.Routes())
-	defer tsUser.Close()
+	// Server Routes API
+	ts := httptest.NewTLSServer(app.Routes())
+	defer ts.Close()
+
+	// Read a SQL file for the deleting all records
+	script, err := os.ReadFile("./test/sql/delete_all.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Delete all records
+	_, err = db.Exec(string(script))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Delete all indexing in the Solr Team Collection
+	res, err := http.Post(
+		"http://localhost:8983/solr/teams/update?commit=true",
+		"application/json",
+		bytes.NewReader([]byte("{'delete': {'query': '*:*'}}")))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.StatusCode != http.StatusOK {
+		t.Fatal(res)
+	}
 
 	// Register
 	email := "jon@doe.com"
 	password := "pa55word"
-	user := fmt.Sprintf(`{"email": "%v", "password":  "%v", "first_name": "Jon", "last_name": "Doe"}`, email, password)
-	res, err := tsUser.Client().Post(tsUser.URL+"/service/users", "application/json", bytes.NewReader([]byte(user)))
+	user := fmt.Sprintf(
+		`{"email": "%v", "password":  "%v", "first_name": "Jon", "last_name": "Doe"}`,
+		email, password)
+	res, err = http.Post(
+		"http://localhost:8000/service/users",
+		"application/json",
+		bytes.NewReader([]byte(user)))
 	assert.Nil(t, err)
 	assert.Equal(t, res.StatusCode, http.StatusAccepted)
 
+	// Read response
+	body, err := io.ReadAll(res.Body)
 	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
 	assert.Nil(t, err)
 
-	var mUser map[string]dataUser.User
+	var mUser map[string]data.User
 	err = json.Unmarshal(body, &mUser)
 	assert.Nil(t, err)
 	assert.Equal(t, mUser["user"].Email, email)
 
-	// User sign in to get a token
-	login := fmt.Sprintf(`{"email": "%v", "password":  "%v"}`, email, password)
-	res, err = tsUser.Client().Post(tsUser.URL+"/service/users/authentication", "application/json", bytes.NewReader([]byte(login)))
+	// Sign in
+	login := fmt.Sprintf(
+		`{"email": "%v", "password":  "%v"}`,
+		email, password)
+	res, err = http.Post(
+		"http://localhost:8000/service/users/authentication",
+		"application/json",
+		bytes.NewReader([]byte(login)))
 	assert.Nil(t, err)
 	assert.Equal(t, res.StatusCode, http.StatusCreated)
 
+	// Read a token
+	body, err = io.ReadAll(res.Body)
 	defer res.Body.Close()
-	body, err = ioutil.ReadAll(res.Body)
 	assert.Nil(t, err)
 
 	type authType struct {
@@ -163,33 +121,8 @@ func TestE2E(t *testing.T) {
 	}
 	var authResult authType
 	err = json.Unmarshal(body, &authResult)
-
 	assert.Nil(t, err)
 	assert.NotNil(t, authResult.Token)
-
-	// Team Service
-	var cfgTeam Config
-	cfgTeam.Db.Dsn = cfgUser.Db.Dsn
-	cfgTeam.Auth.Secret = "secret"
-	cfgTeam.Db.MaxOpenConn = 25
-	cfgTeam.Db.MaxIdleConn = 25
-	cfgTeam.Db.MaxIdleTime = "15m"
-	cfgTeam.Limiter.Enabled = true
-	cfgTeam.Limiter.Rps = 2
-	cfgTeam.Limiter.Burst = 6
-	cfgTeam.Uploads = "../uploads"
-
-	loggerTeam := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
-
-	appTeam := Application{
-		Config: cfgTeam,
-		Logger: loggerTeam,
-		Models: data.InitModels(db),
-	}
-
-	// Server Routes API
-	tsTeam := httptest.NewTLSServer(appTeam.Routes())
-	defer tsTeam.Close()
 
 	// Create Team
 	// Create body buffer
@@ -200,22 +133,22 @@ func TestE2E(t *testing.T) {
 	bodyWriter.WriteField("team_name", "Doe's Team")
 
 	// Add team picture
-	filename := "./test/team.jpg"
+	filename := "./test/images/team.jpg"
 	fileWriter, err := bodyWriter.CreateFormFile("team_picture", filename)
 	if err != nil {
-		fmt.Println("Error writing to buffer")
+		t.Fatal(err)
 	}
 
 	// Open file
 	fileHandler, err := os.Open(filename)
 	if err != nil {
-		fmt.Println("Error opening file")
+		t.Fatal(err)
 	}
 
 	// Copy file
 	_, err = io.Copy(fileWriter, fileHandler)
 	if err != nil {
-		fmt.Println("Error copy file")
+		t.Fatal(err)
 	}
 
 	// Put on body
@@ -223,19 +156,19 @@ func TestE2E(t *testing.T) {
 	bodyWriter.Close()
 
 	// Post a new team
-	req, _ := http.NewRequest("POST", tsTeam.URL+"/service/teams", bodyBuf)
+	req, _ := http.NewRequest("POST", ts.URL+"/service/teams", bodyBuf)
 	req.Header.Add("Content-Type", contentType)
 
 	bearer := fmt.Sprintf("Bearer %v", authResult.Token)
 	req.Header.Set("Authorization", bearer)
 
-	res, err = tsTeam.Client().Do(req)
+	res, err = ts.Client().Do(req)
 	assert.Nil(t, err)
 	assert.Equal(t, res.StatusCode, http.StatusCreated)
 
 	// Read response
 	defer res.Body.Close()
-	body, err = ioutil.ReadAll(res.Body)
+	body, err = io.ReadAll(res.Body)
 	assert.Nil(t, err)
 
 	var mTeam map[string]data.Team
@@ -244,15 +177,18 @@ func TestE2E(t *testing.T) {
 	assert.Equal(t, mTeam["team"].TeamUser, mUser["user"].ID)
 
 	// Get a picture
-	req, _ = http.NewRequest("GET", tsTeam.URL+"/service/teams/pictures/"+mTeam["team"].TeamPicture, nil)
+	req, _ = http.NewRequest(
+		"GET",
+		ts.URL+"/service/teams/pictures/"+mTeam["team"].TeamPicture,
+		nil)
 
-	res, err = tsTeam.Client().Do(req)
+	res, err = ts.Client().Do(req)
 	assert.Nil(t, err)
 	assert.Equal(t, res.StatusCode, http.StatusOK)
 
 	// Read response
 	defer res.Body.Close()
-	body, err = ioutil.ReadAll(res.Body)
+	body, err = io.ReadAll(res.Body)
 	assert.Nil(t, err)
 
 	// Check type of file
@@ -261,31 +197,40 @@ func TestE2E(t *testing.T) {
 
 	// Register a user for the team member
 	user = `{"email": "nina@doe.com", "password":  "pa55word", "first_name": "Nina", "last_name": "Doe"}`
-	res, err = tsUser.Client().Post(tsUser.URL+"/service/users", "application/json", bytes.NewReader([]byte(user)))
+	res, err = http.Post(
+		"http://localhost:8000/service/users",
+		"application/json",
+		bytes.NewReader([]byte(user)))
 	assert.Nil(t, err)
 	assert.Equal(t, res.StatusCode, http.StatusAccepted)
 
 	defer res.Body.Close()
-	body, err = ioutil.ReadAll(res.Body)
+	body, err = io.ReadAll(res.Body)
 	assert.Nil(t, err)
 
-	var mNewUser map[string]dataUser.User
+	var mNewUser map[string]data.User
 	err = json.Unmarshal(body, &mNewUser)
 	assert.Nil(t, err)
 
 	// Create a new team member
-	teamMember := fmt.Sprintf(`{"team_member_team": "%v", "team_member_user":  "%v"}`, mTeam["team"].ID, mNewUser["user"].ID)
-	req, _ = http.NewRequest("POST", tsTeam.URL+"/service/teams/members", bytes.NewReader([]byte(teamMember)))
+	teamMember := fmt.Sprintf(
+		`{"team_member_team": "%v", "team_member_user":  "%v"}`,
+		mTeam["team"].ID,
+		mNewUser["user"].ID)
+	req, _ = http.NewRequest(
+		"POST",
+		ts.URL+"/service/teams/members",
+		bytes.NewReader([]byte(teamMember)))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Set("Authorization", bearer)
 
-	res, err = tsTeam.Client().Do(req)
+	res, err = ts.Client().Do(req)
 	assert.Nil(t, err)
 	assert.Equal(t, res.StatusCode, http.StatusCreated)
 
 	// Read response
 	defer res.Body.Close()
-	body, err = ioutil.ReadAll(res.Body)
+	body, err = io.ReadAll(res.Body)
 	assert.Nil(t, err)
 
 	var mTeamMember map[string]data.TeamMember
@@ -294,11 +239,11 @@ func TestE2E(t *testing.T) {
 	assert.Equal(t, mTeamMember["team_member"].TeamMemberTeam, mTeam["team"].ID)
 
 	// Get a list team members of the current user
-	req, _ = http.NewRequest("GET", tsTeam.URL+"/service/teams/members", nil)
+	req, _ = http.NewRequest("GET", ts.URL+"/service/teams/members", nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Set("Authorization", bearer)
 
-	res, err = tsTeam.Client().Do(req)
+	res, err = ts.Client().Do(req)
 	assert.Nil(t, err)
 	assert.Equal(t, res.StatusCode, http.StatusOK)
 
@@ -311,20 +256,26 @@ func TestE2E(t *testing.T) {
 	assert.NotEqual(t, len(mTeamMembers["team_members"]), 0)
 
 	// Get a team member
-	req, _ = http.NewRequest("GET", tsTeam.URL+"/service/teams/members/"+mTeamMembers["team_members"][0].ID.String(), nil)
+	req, _ = http.NewRequest(
+		"GET",
+		ts.URL+"/service/teams/members/"+mTeamMembers["team_members"][0].ID.String(),
+		nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Set("Authorization", bearer)
 
-	res, err = tsTeam.Client().Do(req)
+	res, err = ts.Client().Do(req)
 	assert.Nil(t, err)
 	assert.Equal(t, res.StatusCode, http.StatusOK)
 
 	// Delete a team member
-	req, _ = http.NewRequest("DELETE", tsTeam.URL+"/service/teams/members/"+mTeamMember["team_member"].ID.String(), nil)
+	req, _ = http.NewRequest(
+		"DELETE",
+		ts.URL+"/service/teams/members/"+mTeamMember["team_member"].ID.String(),
+		nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Set("Authorization", bearer)
 
-	res, err = tsTeam.Client().Do(req)
+	res, err = ts.Client().Do(req)
 	assert.Nil(t, err)
 	assert.Equal(t, res.StatusCode, http.StatusOK)
 }

@@ -1,4 +1,4 @@
-// Copyright 2022, e-inwork.com. All rights reserved.
+// Copyright 2023, e-inwork.com. All rights reserved.
 
 package data
 
@@ -8,7 +8,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/e-inwork-com/go-team-service/pkg/validator"
+	"github.com/e-inwork-com/go-team-service/internal/validator"
 
 	"github.com/google/uuid"
 )
