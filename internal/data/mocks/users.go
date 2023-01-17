@@ -1,3 +1,5 @@
+// Copyright 2023, e-inwork.com. All rights reserved.
+
 package mocks
 
 import (

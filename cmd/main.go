@@ -6,6 +6,7 @@ import (
 	"expvar"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"runtime"
 	"strings"
@@ -14,11 +15,18 @@ import (
 	"github.com/e-inwork-com/go-team-service/api"
 	"github.com/e-inwork-com/go-team-service/internal/data"
 	"github.com/e-inwork-com/go-team-service/internal/jsonlog"
+	"github.com/joho/godotenv"
 
 	_ "github.com/lib/pq"
 )
 
 func main() {
+	// Load .env if available
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Enviroment file .env is not found!")
+	}
+
 	// Set Configuration
 	var cfg api.Config
 
