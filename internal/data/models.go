@@ -9,13 +9,14 @@ import (
 
 var (
 	ErrRecordNotFound = errors.New("record not found")
+	ErrCreateConflict = errors.New("create conflict")
 	ErrEditConflict   = errors.New("edit conflict")
 )
 
 type Models struct {
-	Teams       TeamModel
-	Users       UserModel
-	TeamMembers TeamMemberModel
+	Teams       TeamModelInterface
+	Users       UserModelInterface
+	TeamMembers TeamMemberModelInterface
 }
 
 func InitModels(db *sql.DB) Models {

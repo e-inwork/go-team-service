@@ -13,6 +13,13 @@ import (
 	"github.com/google/uuid"
 )
 
+type TeamMemberModelInterface interface {
+	Insert(teamMember *TeamMember) error
+	GetByID(id uuid.UUID) (*TeamMember, error)
+	ListByOwner(teamMemberTeam uuid.UUID) ([]*TeamMember, error)
+	Delete(teamMember *TeamMember) error
+}
+
 type TeamMember struct {
 	ID                      uuid.UUID `json:"id"`
 	CreatedAt               time.Time `json:"created_at"`
@@ -159,7 +166,7 @@ func (m TeamMemberModel) Delete(teamMember *TeamMember) error {
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return ErrEditConflict
+			return ErrRecordNotFound
 		default:
 			return err
 		}

@@ -13,6 +13,10 @@ import (
 
 var AnonymousUser = &User{}
 
+type UserModelInterface interface {
+	GetByID(id uuid.UUID) (*User, error)
+}
+
 type User struct {
 	ID        uuid.UUID `json:"id"`
 	CreatedAt time.Time `json:"created_at"`

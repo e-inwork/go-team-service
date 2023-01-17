@@ -6,12 +6,23 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 	"time"
 
+	"github.com/e-inwork-com/go-team-service/internal/grpc/teams"
 	"github.com/e-inwork-com/go-team-service/internal/validator"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/google/uuid"
 )
+
+type TeamModelInterface interface {
+	Insert(gRPCTeam string, team *Team) error
+	GetByID(id uuid.UUID) (*Team, error)
+	GetByTeamUser(teamUser uuid.UUID) (*Team, error)
+	Update(gRPCTeam string, team *Team) error
+}
 
 type Team struct {
 	ID          uuid.UUID `json:"id"`
@@ -30,7 +41,31 @@ func ValidateTeam(v *validator.Validator, team *Team) {
 	v.Check(team.TeamName != "", "team_name", "must be provided")
 }
 
-func (m TeamModel) Insert(team *Team) error {
+func gRPCTeamIndexing(gRPCTeam string, team *Team) error {
+	// Send to gRPC - Go Team Indexing Service
+	con, err := grpc.Dial(gRPCTeam, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return err
+	}
+	defer con.Close()
+
+	c := teams.NewTeamServiceClient(con)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err = c.WriteTeam(ctx, &teams.TeamRequest{
+		TeamEntry: &teams.Team{
+			Id: team.ID.String(),
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m TeamModel) Insert(gRPCTeam string, team *Team) error {
 	query := `
         INSERT INTO teams (team_user, team_name, team_picture)
         VALUES ($1, $2, $3)
@@ -44,6 +79,11 @@ func (m TeamModel) Insert(team *Team) error {
 	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&team.ID, &team.CreatedAt, &team.Version)
 	if err != nil {
 		return err
+	}
+
+	err = gRPCTeamIndexing(gRPCTeam, team)
+	if err != nil {
+		log.Println(err)
 	}
 
 	return nil
@@ -121,11 +161,11 @@ func (m TeamModel) GetByTeamUser(teamUser uuid.UUID) (*Team, error) {
 	return &team, nil
 }
 
-func (m TeamModel) Update(team *Team) error {
+func (m TeamModel) Update(gRPCTeam string, team *Team) error {
 	// SQL Update
 	query := `
         UPDATE teams
-        SET team_name = $1, team_picture = $2, version = version + 1
+        SET team_name = $1, team_picture = $2, version = version + 1, is_indexed = false
         WHERE id = $3 AND version = $4
         RETURNING version`
 
@@ -146,10 +186,15 @@ func (m TeamModel) Update(team *Team) error {
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return ErrEditConflict
+			return ErrRecordNotFound
 		default:
 			return err
 		}
+	}
+
+	err = gRPCTeamIndexing(gRPCTeam, team)
+	if err != nil {
+		log.Println(err)
 	}
 
 	return nil

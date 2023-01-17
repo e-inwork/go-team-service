@@ -22,11 +22,11 @@ func main() {
 	// Set Configuration
 	var cfg api.Config
 
-	// Read environment  from a command line and OS
+	// Read environment variables
 	flag.IntVar(&cfg.Port, "port", 4002, "API server port")
 	flag.StringVar(&cfg.Env, "env", "development", "Environment (development|staging|production)")
 	flag.StringVar(&cfg.Db.Dsn, "db-dsn", os.Getenv("DBDSN"), "Database DSN")
-	flag.StringVar(&cfg.Auth.Secret, "auth-secret", "secret", "Authentication Secret")
+	flag.StringVar(&cfg.Auth.Secret, "auth-secret", os.Getenv("AUTHSECRET"), "Authentication Secret")
 	flag.IntVar(&cfg.Db.MaxOpenConn, "db-max-open-conn", 25, "Database max open connections")
 	flag.IntVar(&cfg.Db.MaxIdleConn, "db-max-idle-conn", 25, "Database max idle connections")
 	flag.StringVar(&cfg.Db.MaxIdleTime, "db-max-idle-time", "15m", "Database max connection idle time")
