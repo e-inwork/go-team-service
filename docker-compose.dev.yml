@@ -11,7 +11,7 @@ services:
     networks:
       - network-dev
     volumes:
-      - ./local/dev/solr-dev-1:/var/solr
+      - ./local/dev/solr-dev-1:/var/solr/data
     depends_on:
       - zoo-dev-1
       - zoo-dev-2
@@ -27,7 +27,7 @@ services:
     networks:
       - network-dev
     volumes:
-      - ./local/dev/solr-dev-2:/var/solr
+      - ./local/dev/solr-dev-2:/var/solr/data
     depends_on:
       - zoo-dev-1
       - zoo-dev-2
@@ -43,7 +43,7 @@ services:
     networks:
       - network-dev
     volumes:
-      - ./local/dev/solr-dev-3:/var/solr
+      - ./local/dev/solr-dev-3:/var/solr/data
     depends_on:
       - zoo-dev-1
       - zoo-dev-2
@@ -65,7 +65,9 @@ services:
     networks:
       - network-dev
     volumes:
-      - ./local/dev/zoo-dev-1:/data
+      - ./local/dev/zoo-dev-data-1:/data
+      - ./local/dev/zoo-dev-log-1:/logs
+      - ./local/dev/zoo-dev-datalog-1:/datalog
 
   zoo-dev-2:
     image: zookeeper
@@ -83,7 +85,9 @@ services:
     networks:
       - network-dev
     volumes:
-      - ./local/dev/zoo-dev-2:/data
+      - ./local/dev/zoo-dev-data-2:/data
+      - ./local/dev/zoo-dev-log-2:/logs
+      - ./local/dev/zoo-dev-datalog-2:/datalog
 
   zoo-dev-3:
     image: zookeeper
@@ -101,7 +105,9 @@ services:
     networks:
       - network-dev
     volumes:
-      - ./local/dev/zoo-dev-3:/data
+      - ./local/dev/zoo-dev-data-3:/data
+      - ./local/dev/zoo-dev-log-3:/logs
+      - ./local/dev/zoo-dev-datalog-3:/datalog
 
   curl-dev:
     build:
