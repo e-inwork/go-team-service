@@ -1,8 +1,13 @@
 # [e-inwork.com](https://e-inwork.com)
 
-## Getting Started - Golang Team Microservice
-### Run the Golang Team Microservice and the [the Golang User Microservice](https://github.com/e-inwork-com/go-user-service)
-#### The application will be running with two different microservices in one port 8000 using [Envoy](https://www.envoyproxy.io).
+## Golang Team Microservice
+This microservice is a microservice orchestration with the following microservices:
+- [Golang User Microservice](https://github.com/e-inwork-com/go-user-service)
+- [Golang Team Indexing Microservice](https://github.com/e-inwork-com/go-team-indexing-service)
+
+Golang User Microservice and Golang Team Microservice use [Envoy](https://www.envoyproxy.io) as a proxy on port 8000. The team data in Golang Team Microservice will be available in the [Solr](https://solr.apache.org) Search Platform through Golang Team Indexing Microservice and synchronized using [gRPC](https://grpc.io). And all microservices use one [PostgreSQL](https://www.postgresql.org) database.
+
+To run all above microservices, follow the bellow command:
 1. Install Docker
     - https://docs.docker.com/get-docker/
 2. Git clone this repository to your folder, and from the terminal run below command:
@@ -15,7 +20,7 @@
    ```
 4. Run Docker Compose:
    ```
-   docker-compose up -d
+   docker-compose -f docker-compose.yml up -d
    ```
 5. Create a user in the User API with CURL command line:
     ```
@@ -70,10 +75,25 @@
     ```
     curl -I -H "Authorization: Bearer $token"  -X DELETE http://localhost:8000/service/teams/members/$team_member_id
     ```
-17. Run end to end testing (install Golang before run the below command, if not yet installed):
+17. Run unit testing (required Golang Version: 1.19.4):
     ```
+    # From folder "go-team-service", run:
     go mod tidy
-    cd api
-    go test -v .
+    go test -v -run TestRoutes ./api
     ```
-18. Have fun!
+17. Run end to end testing (required Golang Version: 1.19.4):
+    ```
+    # Down the Local Docker Compose if you run it on No. 4
+    docker-compose -f docker-compose.yml down
+    # Run the Test Docker Compose
+    docker-compose -f docker-compose.test.yml up -d
+    # Check the status "curl-local" and "migrate-local", and wait until status "exited (0)", run bellow command to check it
+    docker-compose -f docker-compose.test.yml ps
+    # Run end to end tesing
+    go test -v -run TestE2E ./api
+    ```
+18. If you want to debug in the editor code like [VSCode](https://code.visualstudio.com), activate Docker Compose development mode before run `main.go`. Golang User Microservie will be running on port 8000, and Golang Team Microservice on port 4002.
+    ```
+    docker-compose -f docker-compose.dev.yml up -d
+    ```
+19. Have fun!
