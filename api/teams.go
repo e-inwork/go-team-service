@@ -1,23 +1,17 @@
-// Copyright 2022, e-inwork.com. All rights reserved.
+// Copyright 2023, e-inwork.com. All rights reserved.
 
 package api
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
-	"time"
 
-	"github.com/e-inwork-com/go-team-service/pkg/data"
-	"github.com/e-inwork-com/go-team-service/pkg/grpc/teams"
-	"github.com/e-inwork-com/go-team-service/pkg/validator"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"github.com/e-inwork-com/go-team-service/internal/data"
+	"github.com/e-inwork-com/go-team-service/internal/validator"
 )
 
 func (app *Application) createTeamHandler(w http.ResponseWriter, r *http.Request) {
@@ -102,37 +96,13 @@ func (app *Application) createTeamHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	// Insert data to Team
-	err = app.Models.Teams.Insert(team)
+	err = app.Models.Teams.Insert(app.Config.GRPCTeam, team)
 	if err != nil {
 		switch {
 		default:
-			app.serverErrorResponse(w, r, err)
+			app.errSQLResponse(w, r, err)
 		}
 		return
-	}
-
-	// Send to gRPC - Go Team Search Service
-	connection, err := grpc.Dial(app.Config.GRPCTeams, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		app.Logger.PrintError(err, map[string]string{
-			"target": connection.Target(),
-		})
-	}
-	defer connection.Close()
-
-	c := teams.NewTeamServiceClient(connection)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-
-	_, err = c.WriteTeam(ctx, &teams.TeamRequest{
-		TeamEntry: &teams.Team{
-			Id: team.ID.String(),
-		},
-	})
-	if err != nil {
-		app.Logger.PrintError(err, map[string]string{
-			"target": connection.Target(),
-		})
 	}
 
 	// Send a data as response of the HTTP request
@@ -284,7 +254,7 @@ func (app *Application) patchTeamHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Update the Profile
-	err = app.Models.Teams.Update(team)
+	err = app.Models.Teams.Update(app.Config.GRPCTeam, team)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrEditConflict):
@@ -311,7 +281,7 @@ func (app *Application) getProfilePictureHandler(w http.ResponseWriter, r *http.
 	}
 
 	// Read file
-	buffer, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", app.Config.Uploads, file))
+	buffer, err := os.ReadFile(fmt.Sprintf("%s/%s", app.Config.Uploads, file))
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return

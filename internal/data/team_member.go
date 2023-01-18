@@ -1,4 +1,4 @@
-// Copyright 2022, e-inwork.com. All rights reserved.
+// Copyright 2023, e-inwork.com. All rights reserved.
 
 package data
 
@@ -8,10 +8,17 @@ import (
 	"errors"
 	"time"
 
-	"github.com/e-inwork-com/go-team-service/pkg/validator"
+	"github.com/e-inwork-com/go-team-service/internal/validator"
 
 	"github.com/google/uuid"
 )
+
+type TeamMemberModelInterface interface {
+	Insert(teamMember *TeamMember) error
+	GetByID(id uuid.UUID) (*TeamMember, error)
+	ListByOwner(teamMemberTeam uuid.UUID) ([]*TeamMember, error)
+	Delete(teamMember *TeamMember) error
+}
 
 type TeamMember struct {
 	ID                      uuid.UUID `json:"id"`
@@ -159,7 +166,7 @@ func (m TeamMemberModel) Delete(teamMember *TeamMember) error {
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return ErrEditConflict
+			return ErrRecordNotFound
 		default:
 			return err
 		}

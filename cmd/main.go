@@ -1,4 +1,4 @@
-// Copyright 2022, e-inwork.com. All rights reserved.
+// Copyright 2023, e-inwork.com. All rights reserved.
 
 package main
 
@@ -6,27 +6,35 @@ import (
 	"expvar"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"runtime"
 	"strings"
 	"time"
 
 	"github.com/e-inwork-com/go-team-service/api"
-	"github.com/e-inwork-com/go-team-service/pkg/data"
-	"github.com/e-inwork-com/go-team-service/pkg/jsonlog"
+	"github.com/e-inwork-com/go-team-service/internal/data"
+	"github.com/e-inwork-com/go-team-service/internal/jsonlog"
+	"github.com/joho/godotenv"
 
 	_ "github.com/lib/pq"
 )
 
 func main() {
+	// Load .env if available
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Enviroment file .env is not found!")
+	}
+
 	// Set Configuration
 	var cfg api.Config
 
-	// Read environment  from a command line and OS
+	// Read environment variables
 	flag.IntVar(&cfg.Port, "port", 4002, "API server port")
 	flag.StringVar(&cfg.Env, "env", "development", "Environment (development|staging|production)")
 	flag.StringVar(&cfg.Db.Dsn, "db-dsn", os.Getenv("DBDSN"), "Database DSN")
-	flag.StringVar(&cfg.Auth.Secret, "auth-secret", "secret", "Authentication Secret")
+	flag.StringVar(&cfg.Auth.Secret, "auth-secret", os.Getenv("AUTHSECRET"), "Authentication Secret")
 	flag.IntVar(&cfg.Db.MaxOpenConn, "db-max-open-conn", 25, "Database max open connections")
 	flag.IntVar(&cfg.Db.MaxIdleConn, "db-max-idle-conn", 25, "Database max idle connections")
 	flag.StringVar(&cfg.Db.MaxIdleTime, "db-max-idle-time", "15m", "Database max connection idle time")
@@ -34,7 +42,7 @@ func main() {
 	flag.Float64Var(&cfg.Limiter.Rps, "limiter-rps", 2, "Rate limiter maximum requests per second")
 	flag.IntVar(&cfg.Limiter.Burst, "limiter-burst", 4, "Rate limiter maximum burst")
 	flag.StringVar(&cfg.Uploads, "uploads", os.Getenv("UPLOADS"), "Uploads folder")
-	flag.StringVar(&cfg.GRPCTeams, "grpc-teams", os.Getenv("GRPCTEAMS"), "gRPC Teams")
+	flag.StringVar(&cfg.GRPCTeam, "grpc-team", os.Getenv("GRPCTEAM"), "gRPC Teams")
 	flag.Func("cors-trusted-origins", "Trusted CORS origins (space separated)", func(val string) error {
 		cfg.Cors.TrustedOrigins = strings.Fields(val)
 		return nil

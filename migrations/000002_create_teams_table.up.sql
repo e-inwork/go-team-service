@@ -5,5 +5,6 @@ CREATE TABLE IF NOT EXISTS teams (
     team_name char varying(100) NOT NULL,
     team_picture char varying(512),
     is_indexed BOOLEAN NOT NULL DEFAULT false,
+    is_deleted BOOLEAN NOT NULL DEFAULT false,
     version integer NOT NULL DEFAULT 1
 );

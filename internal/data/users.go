@@ -1,4 +1,4 @@
-// Copyright 2022, e-inwork.com. All rights reserved.
+// Copyright 2023, e-inwork.com. All rights reserved.
 
 package data
 
@@ -12,6 +12,10 @@ import (
 )
 
 var AnonymousUser = &User{}
+
+type UserModelInterface interface {
+	GetByID(id uuid.UUID) (*User, error)
+}
 
 type User struct {
 	ID        uuid.UUID `json:"id"`

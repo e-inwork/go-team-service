@@ -1,0 +1,5 @@
+# Alpine
+FROM alpine:latest
+
+# Add CURL
+RUN apk --no-cache add curl

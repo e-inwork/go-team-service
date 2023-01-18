@@ -1,4 +1,4 @@
-// Copyright 2022, e-inwork.com. All rights reserved.
+// Copyright 2023, e-inwork.com. All rights reserved.
 
 package api
 
@@ -14,8 +14,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/e-inwork-com/go-team-service/pkg/data"
-	"github.com/e-inwork-com/go-team-service/pkg/jsonlog"
+	"github.com/e-inwork-com/go-team-service/internal/data"
+	"github.com/e-inwork-com/go-team-service/internal/jsonlog"
 
 	_ "github.com/lib/pq"
 )
@@ -50,8 +50,8 @@ type Config struct {
 		TrustedOrigins []string
 	}
 
-	Uploads   string
-	GRPCTeams string
+	Uploads  string
+	GRPCTeam string
 }
 
 type Application struct {

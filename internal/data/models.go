@@ -1,4 +1,4 @@
-// Copyright 2022, e-inwork.com. All rights reserved.
+// Copyright 2023, e-inwork.com. All rights reserved.
 
 package data
 
@@ -9,13 +9,14 @@ import (
 
 var (
 	ErrRecordNotFound = errors.New("record not found")
+	ErrCreateConflict = errors.New("create conflict")
 	ErrEditConflict   = errors.New("edit conflict")
 )
 
 type Models struct {
-	Teams       TeamModel
-	Users       UserModel
-	TeamMembers TeamMemberModel
+	Teams       TeamModelInterface
+	Users       UserModelInterface
+	TeamMembers TeamMemberModelInterface
 }
 
 func InitModels(db *sql.DB) Models {

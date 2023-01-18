@@ -2,6 +2,7 @@
 *.dll
 *.so
 *.dylib
+__debug_bin
 
 # Test binary, built with `go test -c`
 *.test
@@ -15,5 +16,5 @@
 # Mac OS
 .DS_Store
 
-# Upload directory
-/uploads
+# Local data
+local/

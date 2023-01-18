@@ -1,4 +1,4 @@
-// Copyright 2022, e-inwork.com. All rights reserved.
+// Copyright 2023, e-inwork.com. All rights reserved.
 
 package api
 
@@ -84,4 +84,9 @@ func (app *Application) inactiveAccountResponse(w http.ResponseWriter, r *http.R
 func (app *Application) notPermittedResponse(w http.ResponseWriter, r *http.Request) {
 	message := "your user account doesn't have the necessary permissions to access this resource"
 	app.errorResponse(w, r, http.StatusForbidden, message)
+}
+
+func (app *Application) errSQLResponse(w http.ResponseWriter, r *http.Request, err error) {
+	message := err.Error()
+	app.errorResponse(w, r, http.StatusBadRequest, message)
 }
