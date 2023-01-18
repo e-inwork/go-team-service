@@ -100,7 +100,7 @@ func (app *Application) createTeamHandler(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		switch {
 		default:
-			app.serverErrorResponse(w, r, err)
+			app.errSQLResponse(w, r, err)
 		}
 		return
 	}
