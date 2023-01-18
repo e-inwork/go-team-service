@@ -11,7 +11,7 @@ services:
     networks:
       - network-test
     volumes:
-      - ./local/test/solr-test-1:/var/solr
+      - ./local/test/solr-test-1:/var/solr/data
     depends_on:
       - zoo-test-1
       - zoo-test-2
@@ -27,7 +27,7 @@ services:
     networks:
       - network-test
     volumes:
-      - ./local/test/solr-test-2:/var/solr
+      - ./local/test/solr-test-2:/var/solr/data
     depends_on:
       - zoo-test-1
       - zoo-test-2
@@ -43,7 +43,7 @@ services:
     networks:
       - network-test
     volumes:
-      - ./local/test/solr-test-3:/var/solr
+      - ./local/test/solr-test-3:/var/solr/data
     depends_on:
       - zoo-test-1
       - zoo-test-2
@@ -65,7 +65,9 @@ services:
     networks:
       - network-test
     volumes:
-      - ./local/test/zoo-test-1:/data
+      - ./local/test/zoo-test-data-1:/data
+      - ./local/test/zoo-test-log-1:/logs
+      - ./local/test/zoo-test-datalog-1:/datalog
 
   zoo-test-2:
     image: zookeeper
@@ -83,7 +85,9 @@ services:
     networks:
       - network-test
     volumes:
-      - ./local/test/zoo-test-2:/data
+      - ./local/test/zoo-test-data-2:/data
+      - ./local/test/zoo-test-log-2:/logs
+      - ./local/test/zoo-test-datalog-2:/datalog
 
   zoo-test-3:
     image: zookeeper
@@ -101,7 +105,9 @@ services:
     networks:
       - network-test
     volumes:
-      - ./local/test/zoo-test-3:/data
+      - ./local/test/zoo-test-data-3:/data
+      - ./local/test/zoo-test-log-3:/logs
+      - ./local/test/zoo-test-datalog-3:/datalog
 
   curl-test:
     build:

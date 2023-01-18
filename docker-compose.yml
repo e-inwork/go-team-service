@@ -11,7 +11,7 @@ services:
     networks:
       - network-local
     volumes:
-      - ./local/local/solr-local-1:/var/solr
+      - ./local/local/solr-local-1:/var/solr/data
     depends_on:
       - zoo-local-1
       - zoo-local-2
@@ -27,7 +27,7 @@ services:
     networks:
       - network-local
     volumes:
-      - ./local/local/solr-local-2:/var/solr
+      - ./local/local/solr-local-2:/var/solr/data
     depends_on:
       - zoo-local-1
       - zoo-local-2
@@ -43,7 +43,7 @@ services:
     networks:
       - network-local
     volumes:
-      - ./local/local/solr-local-3:/var/solr
+      - ./local/local/solr-local-3:/var/solr/data
     depends_on:
       - zoo-local-1
       - zoo-local-2
@@ -65,7 +65,9 @@ services:
     networks:
       - network-local
     volumes:
-      - ./local/local/zoo-local-1:/data
+      - ./local/local/zoo-local-data-1:/data
+      - ./local/local/zoo-local-log-1:/logs
+      - ./local/local/zoo-local-datalog-1:/datalog
 
   zoo-local-2:
     image: zookeeper
@@ -83,7 +85,9 @@ services:
     networks:
       - network-local
     volumes:
-      - ./local/local/zoo-local-2:/data
+      - ./local/local/zoo-local-data-2:/data
+      - ./local/local/zoo-local-log-2:/logs
+      - ./local/local/zoo-local-datalog-2:/datalog
 
   zoo-local-3:
     image: zookeeper
@@ -101,7 +105,9 @@ services:
     networks:
       - network-local
     volumes:
-      - ./local/local/zoo-local-3:/data
+      - ./local/local/zoo-local-data-3:/data
+      - ./local/local/zoo-local-log-3:/logs
+      - ./local/local/zoo-local-datalog-3:/datalog
 
   curl-local:
     build:
@@ -187,7 +193,7 @@ services:
     networks:
       - network-local
     ports:
-      - "5001"
+      - "5001:5001"
     security_opt:
       - "seccomp:unconfined"
     environment:
@@ -229,7 +235,7 @@ services:
       - team-local
     build:
       context: .
-      dockerfile: Dockerfile.frontenvoy
+      dockerfile: Dockerfile.local.frontenvoy
     networks:
       - network-local
     ports:
