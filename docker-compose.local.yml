@@ -194,7 +194,7 @@ services:
     networks:
       - network-local
     ports:
-      - "5001:5001"
+      - "5001"
     security_opt:
       - "seccomp:unconfined"
     environment:
@@ -226,7 +226,7 @@ services:
       - DBDSN=${DBDSN:-postgres://postgres:postgres@db-service:5432/postgres?sslmode=disable}
       - AUTHSECRET=${AUTHSECRET:-secret}
       - UPLOADS=${UPLOADS:-/app/uploads}
-      - GRPCTEAMS=${GRPCTEAMS:-go-team-indexing-service:5001}
+      - GRPCTEAM=${GRPCTEAM:-go-team-indexing-service:5001}
     deploy:
       restart_policy:
         condition: on-failure
