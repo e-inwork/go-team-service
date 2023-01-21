@@ -27,9 +27,9 @@ To run all the above microservices, follow the below command:
    docker-compose -f docker-compose.local.yml ps
    ```
 6. Create a user in the User API with CURL command line:
-    ```
-    curl -d '{"email": "jon@doe.com", "password": "pa55word", "first_name": "Jon", "last_name": "Doe"}' -H "Content-Type: application/json" -X POST http://localhost:8000/service/users
-    ```
+   ```
+   curl -d '{"email": "jon@doe.com", "password": "pa55word", "first_name": "Jon", "last_name": "Doe"}' -H "Content-Type: application/json" -X POST http://localhost:8000/service/users
+   ```
 7. Login to the User API:
    ```
    curl -d '{"email":"jon@doe.com", "password":"pa55word"}' -H "Content-Type: application/json" -X POST http://localhost:8000/service/users/authentication

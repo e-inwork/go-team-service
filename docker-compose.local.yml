@@ -172,6 +172,7 @@ services:
       - "seccomp:unconfined"
     environment:
       - DBDSN=${DBDSN:-postgres://postgres:postgres@db-service:5432/postgres?sslmode=disable}
+      - AUTHSECRET=${AUTHSECRET:-secret}
     deploy:
       restart_policy:
         condition: on-failure
@@ -211,6 +212,7 @@ services:
       - team-indexing-local
     build:
       context: .
+      dockerfile: Dockerfile.local
     hostname: go-team-service
     networks:
       - network-local

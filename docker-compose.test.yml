@@ -172,6 +172,7 @@ services:
       - "seccomp:unconfined"
     environment:
       - DBDSN=${DBDSN:-postgres://postgres:postgres@db-service:5432/postgres?sslmode=disable}
+      - AUTHSECRET=${AUTHSECRET:-secret}
     deploy:
       restart_policy:
         condition: on-failure
