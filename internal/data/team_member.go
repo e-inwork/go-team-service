@@ -1,5 +1,3 @@
-// Copyright 2023, e-inwork.com. All rights reserved.
-
 package data
 
 import (
